@@ -1,0 +1,21 @@
+ sensor1 = float.Parse(sensordata.ElementAt(1));  
+                                    label2.Text = sensor1.ToString();
+                                // chart***************************************
+                                DataPoint dp1 = new DataPoint();
+                                dp1.SetValueXY(i, sensor1);
+                                chart2.Series[0].Color = Color.Red;
+                                chart2.Series[0].ChartType = SeriesChartType.Spline;
+                                chart2.Series[0].Points.Add(dp1);
+                                //********************************************************
+                                //********************************************************
+                                int blockSize = 100;
+                                var series = chart2.Series[0];//.Add("My Series");
+                                var chartArea = chart2.ChartAreas[series.ChartArea];
+                                chartArea.CursorX.AutoScroll = true;
+
+                                chartArea.AxisX.ScaleView.Zoomable = true;
+                                chartArea.AxisX.ScaleView.SizeType = DateTimeIntervalType.Number;
+                                int size = blockSize;
+                                ////chartArea.AxisX.ScaleView.Zoom(position, size);                               
+                                chartArea.AxisX.ScrollBar.ButtonStyle = ScrollBarButtonStyles.All;
+                                chartArea.AxisX.ScaleView.SmallScrollSize = blockSize;

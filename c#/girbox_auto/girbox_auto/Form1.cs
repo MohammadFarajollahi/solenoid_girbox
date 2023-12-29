@@ -11,33 +11,48 @@ using System.IO.Ports;
 using System.Windows.Forms.DataVisualization.Charting;
 using LiveCharts.Wpf;
 using LiveCharts.WinForms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Rebar;
 using System.Linq.Expressions;
+using Excel = Microsoft.Office.Interop.Excel;
+using System.Runtime.InteropServices;
+
+using Microsoft.Office.Core;
+using System.Collections;
+using System.Data.Common;
+using System.IO;
+using System.Reflection.Emit;
+
+
 
 namespace girbox_auto
 {
    
     public partial class Form1 : Form
     {
+        
         public Form1()
         {
+
+           
+
             InitializeComponent();
 
-            vScrollBar1.Value = 0;
+            vScrollBar1.Value = 30;
             label8.Text = "0";
 
             vScrollBar2.Value = 0;
             label9.Text = "0";
 
-            textBox1.Text = "100";
+            textBox1.Text = "300";
             textBox2.Text = "100";
 
             angularGauge1.TickStep = .5;
-            angularGauge1.ToValue = 30;
+            angularGauge1.ToValue = 15;
            
             angularGauge2.TickStep = 1;
-            angularGauge2.ToValue = 50;
+            angularGauge2.ToValue = 20;
 
-
+            
         }
 
         private void label1_Click(object sender, EventArgs e)
@@ -77,8 +92,15 @@ namespace girbox_auto
         }
              private void disconnect()
         {
-            ComPort.Close();
-            btnConnect.Text = "Connect";
+            try
+            {
+                ComPort.Close();
+                btnConnect.Text = "Connect";
+            }
+            catch
+            {
+
+            }
             //btnSend.Enabled = false;
             //groupBox1.Enabled = true;
 
@@ -135,8 +157,11 @@ namespace girbox_auto
         }
         float sensor1;
         float sensor2;
-
-
+        float[] input1 = new float[1000000];
+        float[] input2 = new float[1000000];
+        int count_input1;
+        int count_input2;
+        int start_program;
         private void SerialPortDataReceived(object sender, SerialDataReceivedEventArgs e)
         {
             try
@@ -156,6 +181,7 @@ namespace girbox_auto
 
         delegate void SetTextCallback(string text);
         Chart chart1;
+        
         private void SetText(string text)
         {
             // text = "sensor1:\r\n";// Bs2,24,19,97Bs3,24,19,97Bs4,24,19,97B\r\n";
@@ -185,32 +211,21 @@ namespace girbox_auto
 
                                 try
                                 {
-                                    sensor1 = float.Parse(sensordata.ElementAt(1));  
-                                    label2.Text = sensor1.ToString();
-                                // chart***************************************
-                                DataPoint dp1 = new DataPoint();
-                                dp1.SetValueXY(i, sensor1);
-                                chart2.Series[0].Color = Color.Red;
-                                chart2.Series[0].ChartType = SeriesChartType.Spline;
-                                chart2.Series[0].Points.Add(dp1);
-                                //********************************************************
-                                //********************************************************
-                                int blockSize = 100;
-                                var series = chart2.Series[0];//.Add("My Series");
-                                var chartArea = chart2.ChartAreas[series.ChartArea];
-                                chartArea.CursorX.AutoScroll = true;
-
-                                chartArea.AxisX.ScaleView.Zoomable = true;
-                                chartArea.AxisX.ScaleView.SizeType = DateTimeIntervalType.Number;
-                                int size = blockSize;
-                                ////chartArea.AxisX.ScaleView.Zoom(position, size);                               
-                                chartArea.AxisX.ScrollBar.ButtonStyle = ScrollBarButtonStyles.All;
-                                chartArea.AxisX.ScaleView.SmallScrollSize = blockSize;
-
-                            }
-                                catch
+                                sensor1 = float.Parse(sensordata.ElementAt(1));
+                                label2.Text = sensor1.ToString();
+                                angularGauge2.Value = sensor1;
+                                if (sensor1 >= 0 && start_program == 1)
                                 {
-                                    label2.Text = "ERROR";
+                                    input1[count_input1] = float.Parse(sensordata.ElementAt(1));
+                                    ++count_input1;
+                                }
+
+
+                                //*******************************
+                            }
+                            catch
+                                {
+                                    //label2.Text = "ERROR";
                                 }
 
                             }
@@ -224,12 +239,17 @@ namespace girbox_auto
                                     // if (sensordata.ElementAt(2) != "") sensor2 = float.Parse(sensordata.ElementAt(2));
 
                                     label13.Text = sensor2.ToString();
-                                    //label13.Text = sensor1.ToString();
-
+                                //label13.Text = sensor1.ToString();
+                                angularGauge1.Value = sensor2;
+                                if (sensor2 >= 0 && start_program == 1)
+                                {
+                                    input2[count_input2] = float.Parse(sensordata.ElementAt(1)); ;
+                                    ++count_input2;
                                 }
+                            }
                                 catch
                                 {
-                                    label2.Text = "ERROR";
+                                   // label2.Text = "ERROR";
                                 }
 
                             }
@@ -460,8 +480,9 @@ namespace girbox_auto
         private void vScrollBar1_Scroll(object sender, ScrollEventArgs e)
         {
             label8.Text = vScrollBar1.Value.ToString();
-           
-            
+
+           // txtSend.Text = "md:" + vScrollBar1.Value.ToString();
+           // sendData();
         }
 
         private void button2_Click_1(object sender, EventArgs e)
@@ -480,7 +501,7 @@ namespace girbox_auto
 
         private void button4_Click(object sender, EventArgs e)
         {
-            txtSend.Text = "md:" + vScrollBar1.Value.ToString();
+            txtSend.Text = "md:" + vScrollBar1.Value.ToString() + "\r\n";
             sendData();
         }
 
@@ -505,7 +526,7 @@ namespace girbox_auto
 
         private void button5_Click(object sender, EventArgs e)
         {
-            txtSend.Text = "td:" + vScrollBar2.Value.ToString();
+            txtSend.Text = "td:" + vScrollBar2.Value.ToString() + "\r\n";
             sendData();
         }
 
@@ -577,6 +598,391 @@ namespace girbox_auto
         {
             updatePorts();
             CheckForIllegalCrossThreadCalls = false;
+        }
+
+        private void angularGauge1_ChildChanged(object sender, System.Windows.Forms.Integration.ChildChangedEventArgs e)
+        {
+
+        }
+
+        private void button15_Click(object sender, EventArgs e)
+        {
+            txtSend.Text = "start_program";
+            sendData();
+            timer2.Enabled = true;
+            time_start_program = 0;
+            label19.Text = "0";
+            for (int i = 0; i < count_input1; i++)
+            {
+                input1[i] = 0;
+            }
+
+            for (int i = 0; i < count_input2; i++)
+            {
+                input2[i] = 0;
+            }
+            count_input2 = 0;
+            count_input1 = 0;
+
+            start_program = 1;
+           
+        }
+
+        private void button16_Click(object sender, EventArgs e)
+        {
+            txtSend.Text = "stop_program";
+            start_program = 0;
+            sendData();
+            time_start_program = 0;
+            label19.Text = "0";
+            timer2.Enabled = false;
+            count = count_input2;
+        }
+        int time_start_program;
+        private void timer2_Tick(object sender, EventArgs e)
+        {
+            ++time_start_program;
+            label19.Text = time_start_program.ToString();
+
+
+
+            if(start_program == 1)
+            {
+
+            }
+
+        }
+
+        private void button19_Click(object sender, EventArgs e)
+        {
+            for(int i =0; i < count_input1; i++)
+            {
+                input1[i] = 0;
+            }
+
+            for (int i = 0; i < count_input2; i++)
+            {
+                input2[i] = 0;
+            }
+            count_input2 = 0;
+            count_input1 = 0;
+           
+        }
+
+        private void button17_Click(object sender, EventArgs e)
+        {
+            for (int i = 0; i <= count_input1; i++)
+            {
+                DataPoint dp1 = new DataPoint();
+               
+                dp1.SetValueXY(i, input1[i]);             
+                chart2.Series[0].Color = Color.Red;             
+                chart2.Series[0].ChartType = SeriesChartType.StepLine;              
+                chart2.Series[0].Points.Add(dp1);
+                
+            }
+        }
+
+        private void button18_Click(object sender, EventArgs e)
+        {
+            for (int i = 0; i <= count_input2; i++)
+            {
+                DataPoint dp2 = new DataPoint();
+
+                dp2.SetValueXY(i, input2[i]);
+                chart2.Series[1].Color = Color.Blue;
+                chart2.Series[1].ChartType = SeriesChartType.Spline;
+                chart2.Series[1].Points.Add(dp2);
+                
+
+            }
+        }
+
+        private void button22_Click(object sender, EventArgs e)
+        {
+            chart2.Series.Clear();
+        }
+
+        private void label8_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        
+        Random random = new Random();
+        int count;
+        private void button20_Click(object sender, EventArgs e) // count_input1
+        {
+
+            if (textBox3.Text != "")
+            {
+                //***creat excel file***
+                Excel.Application xlApp1 = new Microsoft.Office.Interop.Excel.Application();
+                if (xlApp1 == null)
+                {
+                    MessageBox.Show("Excel is not properly installed!!");
+                    return;
+                }
+                Excel.Workbook xlWorkBook;
+                Excel.Worksheet xlWorkSheet;
+                object misValue = System.Reflection.Missing.Value;
+                xlWorkBook = xlApp1.Workbooks.Add(misValue);
+                xlWorkSheet = (Excel.Worksheet)xlWorkBook.Worksheets.get_Item(1);
+                xlWorkSheet.Cells[1, 1] = "";
+                xlWorkSheet.Cells[1, 2] = "";
+                xlWorkSheet.Cells[2, 1] = "";
+                xlWorkSheet.Cells[2, 2] = "";
+                xlWorkSheet.Cells[3, 1] = "";
+                xlWorkSheet.Cells[3, 2] = "";
+                xlWorkBook.SaveAs("D:\\files\\" + textBox3.Text + ".xls", Excel.XlFileFormat.xlWorkbookNormal, misValue, misValue, misValue, misValue, Excel.XlSaveAsAccessMode.xlExclusive, misValue, misValue, misValue, misValue, misValue);
+                xlWorkBook.Close(true, misValue, misValue);
+                xlApp1.Quit();
+                Marshal.ReleaseComObject(xlWorkSheet);
+                Marshal.ReleaseComObject(xlWorkBook);
+                Marshal.ReleaseComObject(xlApp1);
+                //MessageBox.Show("Excel file created");
+
+
+                //*****save to exel*****
+                string filePath = "";
+                FileInfo fi = new FileInfo(@"D:\\files\\" + textBox3.Text + ".xls");
+                filePath = fi.FullName;
+                label1.Text = filePath;
+
+                Excel.Application xlApp = new Excel.Application();
+                //open workbook
+                Excel.Workbook workbook = xlApp.Workbooks.Open(filePath);
+                //open sheet
+                Excel._Worksheet sheet = workbook.Sheets[1];
+                Excel.Range excelFile = sheet.UsedRange;
+
+                //int row = int.Parse(txtRow.Text), column = int.Parse(txtColumn.Text);
+                //string value = txtValue.Text;
+                //excelFile.Cells[row, column].Value = value;
+                excelFile.Cells[1, 1].Value = "Main valve";
+                excelFile.Cells[1, 2].Value = "Test valve";
+               
+                for (int i = 2; i <= count; i++)
+                {
+                    excelFile.Cells[i, 1].Value = input1[i].ToString();
+                }
+
+                for (int i = 2; i <= count; i++)
+                {
+                    excelFile.Cells[i, 2].Value = input2[i].ToString();
+                }
+
+
+                //save changed data in second excel file
+                workbook.Save();
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                //release com objects to fully kill excel process from running in the background
+                Marshal.ReleaseComObject(excelFile);
+                //close and release
+                workbook.Close();
+                Marshal.ReleaseComObject(workbook);
+                //quit and release
+                xlApp.Quit();
+                Marshal.ReleaseComObject(xlApp);
+                MessageBox.Show("data saved");
+            }
+            else
+            {
+                MessageBox.Show("INSERT THE FILE NAME");
+            }
+        }
+
+
+
+
+
+
+
+        //*************************************************excel  save test***************************************
+        private void button23_Click(object sender, EventArgs e)
+        {
+
+            //***inpu maqadir***
+            for (int i = 2; i <= 100; i++)
+            {
+
+
+                int randomNumber = random.Next(0, 100);
+                int randomNumber2 = random.Next(0, 100);
+
+
+                input1[i] = randomNumber;
+                input2[i] = randomNumber2;
+                ++count;
+                textBox1.Text = input1[i].ToString() + "\r\n";
+            }
+            label22.Text = "new count insert";
+
+
+            //***creat excel file***
+            Excel.Application xlApp1 = new Microsoft.Office.Interop.Excel.Application();
+            if (xlApp1 == null)
+            {
+                MessageBox.Show("Excel is not properly installed!!");
+                return;
+            }
+            Excel.Workbook xlWorkBook;
+            Excel.Worksheet xlWorkSheet;
+            object misValue = System.Reflection.Missing.Value;
+            xlWorkBook = xlApp1.Workbooks.Add(misValue);
+            xlWorkSheet = (Excel.Worksheet)xlWorkBook.Worksheets.get_Item(1);
+            xlWorkSheet.Cells[1, 1] = "";
+            xlWorkSheet.Cells[1, 2] = "";
+            xlWorkSheet.Cells[2, 1] = "";
+            xlWorkSheet.Cells[2, 2] = "";
+            xlWorkSheet.Cells[3, 1] = "";
+            xlWorkSheet.Cells[3, 2] = "";
+            xlWorkBook.SaveAs("D:\\files\\" + textBox3.Text + ".xls", Excel.XlFileFormat.xlWorkbookNormal, misValue, misValue, misValue, misValue, Excel.XlSaveAsAccessMode.xlExclusive, misValue, misValue, misValue, misValue, misValue);
+            xlWorkBook.Close(true, misValue, misValue);
+            xlApp1.Quit();
+            Marshal.ReleaseComObject(xlWorkSheet);
+            Marshal.ReleaseComObject(xlWorkBook);
+            Marshal.ReleaseComObject(xlApp1);
+            MessageBox.Show("Excel file created");
+
+
+            //*****save to exel*****
+            string filePath = "";
+            FileInfo fi = new FileInfo(@"D:\\files\\" + textBox3.Text + ".xls");
+            filePath = fi.FullName;
+            label1.Text = filePath;
+
+            Excel.Application xlApp = new Excel.Application();
+            //open workbook
+            Excel.Workbook workbook = xlApp.Workbooks.Open(filePath);
+            //open sheet
+            Excel._Worksheet sheet = workbook.Sheets[1];
+            Excel.Range excelFile = sheet.UsedRange;
+
+            //int row = int.Parse(txtRow.Text), column = int.Parse(txtColumn.Text);
+            //string value = txtValue.Text;
+            //excelFile.Cells[row, column].Value = value;
+            excelFile.Cells[1, 1].Value = "Main valve";
+            excelFile.Cells[1, 2].Value = "Test valve";
+
+            for (int i = 2; i <= count; i++)
+            {
+                excelFile.Cells[i, 1].Value = input1[i].ToString();
+            }
+
+            for (int i = 2; i <= count; i++)
+            {
+                excelFile.Cells[i, 2].Value = input2[i].ToString();
+            }
+
+
+            //save changed data in second excel file
+            workbook.Save();
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            //release com objects to fully kill excel process from running in the background
+            Marshal.ReleaseComObject(excelFile);
+            //close and release
+            workbook.Close();
+            Marshal.ReleaseComObject(workbook);
+            //quit and release
+            xlApp.Quit();
+            Marshal.ReleaseComObject(xlApp);
+            label3.Text = "***saved***";
+
+        }
+
+        private void button24_Click(object sender, EventArgs e)
+        {
+            
+        }
+
+        //***********************show from open graph*******************
+        string filePath = "";
+        private void button21_Click(object sender, EventArgs e)
+        {
+            openFileDialog1.Title = "File 1";
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                //save selected file name
+                filePath = openFileDialog1.FileName;
+                label23.Text = filePath;
+            }
+        }
+
+        
+        String[] input_1 = new string[20000];
+        String[] input_2 = new string[20000];
+        float[] input11 = new float[1000000];
+        float[] input22 = new float[1000000];
+
+        private void button25_Click(object sender, EventArgs e)
+        {
+            //open excel
+            Excel.Application xlApp = new Excel.Application();
+            //open workbook
+            Excel.Workbook workbook = xlApp.Workbooks.Open(filePath);
+            //open sheet
+            Excel._Worksheet sheet = workbook.Sheets[1];
+            Excel.Range excelFile = sheet.UsedRange;
+
+            for (int i = 2; i < excelFile.Rows.Count; i++)
+            {
+           
+                    input_1[i] = excelFile.Cells[i, 1].Value2.ToString();
+
+               
+                input11[i] = float.Parse(input_1[i]);
+              
+            }
+
+           for (int i = 2; i < excelFile.Rows.Count; i++)
+            {
+             
+                    input_2[i] = excelFile.Cells[i, 2].Value2.ToString();
+                 input22[i] = float.Parse(input_2[i]);
+               
+            }
+
+            int count_cll = excelFile.Rows.Count;
+
+
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            //release com objects to fully kill excel process from running in the background
+            Marshal.ReleaseComObject(excelFile);
+            //close and release
+            workbook.Close();
+            Marshal.ReleaseComObject(workbook);
+            //quit and release
+            xlApp.Quit();
+            Marshal.ReleaseComObject(xlApp);
+           
+
+            for (int i = 2; i <= count_cll; i++)
+            {
+                DataPoint dp1 = new DataPoint();
+
+                dp1.SetValueXY(i, input11[i]);
+                chart2.Series[3].Color = Color.Orange;
+                chart2.Series[3].ChartType = SeriesChartType.StepLine;
+                chart2.Series[3].Points.Add(dp1);
+
+            }
+
+            for (int i = 2; i <= count_cll; i++)
+            {
+                DataPoint dp1 = new DataPoint();
+
+                dp1.SetValueXY(i, input22[i]);
+                chart2.Series[4].Color = Color.Blue;
+                chart2.Series[4].ChartType = SeriesChartType.StepLine;
+                chart2.Series[4].Points.Add(dp1);
+
+            }
+
+            MessageBox.Show("done");
         }
     }
 }

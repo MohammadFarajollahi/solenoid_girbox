@@ -22,6 +22,8 @@ void setup() {
   Serial.println("wait...");
 
   InitTimersSafe();
+
+   SetPinFrequencySafe(test_motor, 300);
 }
 
 void loop() {

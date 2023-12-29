@@ -15,11 +15,32 @@ void uart_text() {
   //test///
   if (cmnd == "test on") test = 1;
   if (cmnd == "test off") test = 0;
-  
 
-    //*****manual move******
-    data = cmnd.substring(0, 2);
+
+  //*****manual move******
+  data = cmnd.substring(0, 2);
   if (data == "hi") Serial.println("Hello Hohammad");
+
+//***********************************start program***************************
+  data = cmnd.substring(0, 13);
+  if (data == "start_program") {
+    start_prog = 1;
+    Serial.println("start program on");
+    second = 0;
+    start_count = 0;
+    main_timer_count = 1;
+  }
+  data = cmnd.substring(0, 12);
+  if (data == "stop_program") {
+    start_prog = 0;
+    Serial.println("start program off");
+    second = 0;
+    start_count = 0;
+    mySerial.println("md=0");
+    dutyCycleInput1 = map(0, 100, 0, 0, 65535);
+    main_timer_count = 0;
+  }  
+
 
   data = cmnd.substring(0, 2);
   if (data == "m1") {
@@ -41,7 +62,7 @@ void uart_text() {
 
 
   //*********************motor1********************
-  if (data == "md") {  //main motor duty
+  if (data == "td") {  //main motor duty
     String ss;
     ss = cmnd.substring(3, 10);
     duty1 = ss.toFloat();
@@ -51,7 +72,7 @@ void uart_text() {
   }
 
 
-  if (data == "mf") {  //main motor frequency
+  if (data == "tf") {  //main motor frequency
     String ss;
     ss = cmnd.substring(3, 10);
     freq1 = ss.toFloat();
@@ -62,7 +83,7 @@ void uart_text() {
 
 
   //*********************motor2********************
-  if (data == "td") {  //test motor duty
+  if (data == "md") {  //test motor duty
     mySerial.println(cmnd);
     // String ss;
     // ss = cmnd.substring(3, 10);
@@ -73,7 +94,7 @@ void uart_text() {
   }
 
 
-  if (data == "tf") {  //test motor frequency
+  if (data == "mf") {  //test motor frequency
     mySerial.println(cmnd);
     // String ss;
     // ss = cmnd.substring(3, 10);

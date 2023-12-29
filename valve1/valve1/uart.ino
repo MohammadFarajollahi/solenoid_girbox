@@ -16,7 +16,7 @@ void uart_text() {
   Serial.println(cmnd);
   data = cmnd.substring(0, 2);
   //*********************motor2********************
-  if (data == "td") { //test motor duty
+  if (data == "md") { //test motor duty
     String ss;
     ss = cmnd.substring(3, 10);
     duty2 = ss.toFloat();
@@ -27,7 +27,7 @@ void uart_text() {
   }
 
 
-  if (data == "tf") { //test motor frequency
+  if (data == "mf") { //test motor frequency
     String ss;
     ss = cmnd.substring(3, 10);
     freq2 = ss.toFloat();

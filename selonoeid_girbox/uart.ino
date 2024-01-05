@@ -3,14 +3,15 @@
 ///**********************input_uart**********************
 void uart_input() {
   while (Serial.available() > 0) {
-    cmnd = Serial.readString();
+    //cmnd = Serial.readString();
+    cmnd = Serial.readStringUntil('\n');
     //lcd_print();
     uart_text();
   }
 }
 
 void uart_text() {
-  Serial.println(cmnd);
+  //Serial.println(cmnd);
 
   //test///
   if (cmnd == "test on") test = 1;
@@ -29,6 +30,7 @@ void uart_text() {
     second = 0;
     start_count = 0;
     main_timer_count = 1;
+    sensor1_send =1;
   }
   data = cmnd.substring(0, 12);
   if (data == "stop_program") {
@@ -39,6 +41,7 @@ void uart_text() {
     mySerial.println("md=0");
     dutyCycleInput1 = map(0, 100, 0, 0, 65535);
     main_timer_count = 0;
+    sensor1_send = 0;
   }  
 
 

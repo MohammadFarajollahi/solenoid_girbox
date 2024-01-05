@@ -1,0 +1,10 @@
+E:\MyProjects\Learning\C#\Write File\Write File\bin\Debug\Write File.exe.config
+E:\MyProjects\Learning\C#\Write File\Write File\bin\Debug\Write File.exe
+E:\MyProjects\Learning\C#\Write File\Write File\bin\Debug\Write File.pdb
+E:\MyProjects\Learning\C#\Write File\Write File\obj\Debug\Write File.csprojResolveAssemblyReference.cache
+E:\MyProjects\Learning\C#\Write File\Write File\obj\Debug\Write_File.Form1.resources
+E:\MyProjects\Learning\C#\Write File\Write File\obj\Debug\Write_File.Properties.Resources.resources
+E:\MyProjects\Learning\C#\Write File\Write File\obj\Debug\Write File.csproj.GenerateResource.Cache
+E:\MyProjects\Learning\C#\Write File\Write File\obj\Debug\Write File.exe
+E:\MyProjects\Learning\C#\Write File\Write File\obj\Debug\Write File.pdb
+E:\MyProjects\Learning\C#\Write File\Write File\obj\Debug\Write File.csproj.ResolveComReference.cache

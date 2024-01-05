@@ -21,19 +21,21 @@ using System.Collections;
 using System.Data.Common;
 using System.IO;
 using System.Reflection.Emit;
-
+using System.Threading;
+using System.Windows.Controls;
+using System.Diagnostics.PerformanceData;
 
 
 namespace girbox_auto
 {
-   
+
     public partial class Form1 : Form
     {
-        
+
         public Form1()
         {
 
-           
+
 
             InitializeComponent();
 
@@ -48,11 +50,11 @@ namespace girbox_auto
 
             angularGauge1.TickStep = .5;
             angularGauge1.ToValue = 15;
-           
+
             angularGauge2.TickStep = 1;
             angularGauge2.ToValue = 20;
 
-            
+
         }
 
         private void label1_Click(object sender, EventArgs e)
@@ -62,7 +64,7 @@ namespace girbox_auto
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            updatePorts();          
+            updatePorts();
             CheckForIllegalCrossThreadCalls = false;
         }
 
@@ -90,7 +92,7 @@ namespace girbox_auto
 
             }
         }
-             private void disconnect()
+        private void disconnect()
         {
             try
             {
@@ -104,8 +106,8 @@ namespace girbox_auto
             //btnSend.Enabled = false;
             //groupBox1.Enabled = true;
 
-        
-    }
+
+        }
 
         private void connect()
         {
@@ -136,7 +138,7 @@ namespace girbox_auto
             if (ComPort.IsOpen)
             {
                 btnConnect.Text = "Disconnect";
-               // btnSend.Enabled = true;
+                // btnSend.Enabled = true;
             }
         }
 
@@ -144,11 +146,11 @@ namespace girbox_auto
         {
             try
             {
-                ComPort.Write(txtSend.Text);
+                ComPort.Write(txtSend.Text + "\n");
 
                 // Show in the terminal window 
                 rtxtDataArea.ForeColor = Color.Green;    //write sent text data in green colour              
-                txtSend.Clear();                       //clear screen after sending data        
+                //txtSend.Clear();                       //clear screen after sending data        
             }
             catch
             {
@@ -181,7 +183,7 @@ namespace girbox_auto
 
         delegate void SetTextCallback(string text);
         Chart chart1;
-        
+
         private void SetText(string text)
         {
             // text = "sensor1:\r\n";// Bs2,24,19,97Bs3,24,19,97Bs4,24,19,97B\r\n";
@@ -192,25 +194,25 @@ namespace girbox_auto
                 label16.Text = s;
                 //if (s.Split('C').Count() == 1) // daryaft kamel etelaat
                 //{
-                    for (int i = 0; i < twobackslash.Count(); i++)
+                for (int i = 0; i < twobackslash.Count(); i++)
+                {
+                    try
                     {
-                        try
+                        label14.Text = twobackslash[0];
+                        label15.Text = twobackslash[1];
+                    }
+                    catch
+                    {
+                        label18.Text = "error";
+                    }
+                    string[] sensordata = twobackslash.ElementAt(i).Split(':');
+                    for (int j = 0; j < sensordata.Count(); j++)
+                    {
+                        if (sensordata.ElementAt(0) == "sensor1" && sensordata.Count() > 1)
                         {
-                            label14.Text = twobackslash[0];
-                            label15.Text = twobackslash[1];
-                        }
-                        catch
-                        {
-                            label18.Text = "error";
-                        }
-                        string[] sensordata = twobackslash.ElementAt(i).Split(':');
-                        for (int j = 0; j < sensordata.Count(); j++)
-                        {
-                            if (sensordata.ElementAt(0) == "sensor1" && sensordata.Count() > 1)
-                            {
 
-                                try
-                                {
+                            try
+                            {
                                 sensor1 = float.Parse(sensordata.ElementAt(1));
                                 label2.Text = sensor1.ToString();
                                 angularGauge2.Value = sensor1;
@@ -224,21 +226,21 @@ namespace girbox_auto
                                 //*******************************
                             }
                             catch
-                                {
-                                    //label2.Text = "ERROR";
-                                }
-
+                            {
+                                //label2.Text = "ERROR";
                             }
 
-                            if (sensordata.ElementAt(0) == "sensor2" && sensordata.Count() > 1)
+                        }
+
+                        if (sensordata.ElementAt(0) == "sensor2" && sensordata.Count() > 1)
+                        {
+
+                            try
                             {
+                                sensor2 = float.Parse(sensordata.ElementAt(1));
+                                // if (sensordata.ElementAt(2) != "") sensor2 = float.Parse(sensordata.ElementAt(2));
 
-                                try
-                                {
-                                    sensor2 = float.Parse(sensordata.ElementAt(1));
-                                    // if (sensordata.ElementAt(2) != "") sensor2 = float.Parse(sensordata.ElementAt(2));
-
-                                    label13.Text = sensor2.ToString();
+                                label13.Text = sensor2.ToString();
                                 //label13.Text = sensor1.ToString();
                                 angularGauge1.Value = sensor2;
                                 if (sensor2 >= 0 && start_program == 1)
@@ -247,13 +249,13 @@ namespace girbox_auto
                                     ++count_input2;
                                 }
                             }
-                                catch
-                                {
-                                   // label2.Text = "ERROR";
-                                }
-
+                            catch
+                            {
+                                // label2.Text = "ERROR";
                             }
+
                         }
+                    }
                     //}
                 }
 
@@ -265,8 +267,8 @@ namespace girbox_auto
                     {
                         rtxtDataArea.ForeColor = Color.Green;    //write text data in Green colour
 
-                    SetTextCallback d = new SetTextCallback(SetText);
-                    this.Invoke(d, new object[] { text });
+                        SetTextCallback d = new SetTextCallback(SetText);
+                        this.Invoke(d, new object[] { text });
                     }
                     catch
                     {
@@ -326,61 +328,49 @@ namespace girbox_auto
         double i;
         int first;
         double position = 0;
-       
+        int count_data = 2;
+        //*****************timer*****************
+
         private void timer1_Tick(object sender, EventArgs e)
         {
-          
-            i += .5;
-            //aGauge1.Value = 6;
-            Random random = new Random();
-            int randomNumber = random.Next(0, 50);
-            int randomNumber2 = random.Next(20, 100);
-            // chart***************************************
-            DataPoint dp1 = new DataPoint();
-            DataPoint dp2 = new DataPoint();
-            dp1.SetValueXY(i, randomNumber);
-            dp2.SetValueXY(i, randomNumber2);
-            chart2.Series[0].Color = Color.Red;
-            chart2.Series[1].Color = Color.Blue;
-            chart2.Series[0].ChartType = SeriesChartType.Spline;
-            chart2.Series[1].ChartType = SeriesChartType.Spline;
+            ++time_start_program;
+            label19.Text = time_start_program.ToString();
 
-            chart2.Series[0].Points.Add(dp1);
-            chart2.Series[1].Points.Add(dp2);
+            String ss1 = time_start_program.ToString();
+            string ss2 = count_input_cell.ToString();
 
-            //*********************************************************
-            //********************************************************
-
-          
-            if (first == 0)
+            try
             {
-                first = 1;
-                
+                if (time1[time_start_program] != "") //Int16.Parse(time1[time_start_program])
+                {
 
+                    txtSend.Text = "td:" + in1[time_start_program] + "\n";
+                    sendData();
+                    label25.Text = in1[time_start_program];
+                }
+
+                if (ss1 == ss2)
+                {
+
+                    txtSend.Text = "td:0"  + "\n";
+                    sendData();
+                    timer1.Enabled = false;
+                    txtSend.Text = "stop_program";
+                    start_program = 0;
+                    sendData();
+                    time_start_program = 0;
+                    label19.Text = "0";
+                    count_data = 0;
+                    MessageBox.Show("***End file***");
+                }
             }
-
-            //********************************************************
-            //********************************************************
-            //********************************************************
-            int blockSize = 100;
-            var series = chart2.Series[0];//.Add("My Series");
-            var chartArea = chart2.ChartAreas[series.ChartArea];           
-            chartArea.CursorX.AutoScroll = true;
-            // let's zoom to [0,blockSize] (e.g. [0,100])
-            chartArea.AxisX.ScaleView.Zoomable = false;
-            chartArea.AxisX.ScaleView.SizeType = DateTimeIntervalType.Number;
-            
-            //if(i > 50) 
-            //position = 100;
-            int size = blockSize;
-            chartArea.AxisX.ScaleView.Zoom(position, size);
-
-            // disable zoom-reset button (only scrollbar's arrows are available)
-            chartArea.AxisX.ScrollBar.ButtonStyle = ScrollBarButtonStyles.All;
-
-            // set scrollbar small change to blockSize (e.g. 100)
-            chartArea.AxisX.ScaleView.SmallScrollSize = blockSize;
+            catch
+            {
+                label25.Text = "no data";
+            }
         }
+
+
         private void FillChart()
         {
             int blockSize = 100;
@@ -422,11 +412,11 @@ namespace girbox_auto
         }
         private void SplineChartExample()
         {
-            
+
         }
         private void button1_Click_1(object sender, EventArgs e)
         {
-            txtSend.Text = txtSend.Text;
+            txtSend.Text = txtSend.Text + "\n";
             sendData();
         }
 
@@ -481,8 +471,8 @@ namespace girbox_auto
         {
             label8.Text = vScrollBar1.Value.ToString();
 
-           // txtSend.Text = "md:" + vScrollBar1.Value.ToString();
-           // sendData();
+            // txtSend.Text = "md:" + vScrollBar1.Value.ToString();
+            // sendData();
         }
 
         private void button2_Click_1(object sender, EventArgs e)
@@ -546,10 +536,7 @@ namespace girbox_auto
             timer1.Enabled = false;
         }
 
-        private void button10_Click(object sender, EventArgs e)
-        {
-            FillChart();
-        }
+
 
         Random random2 = new Random();
         int randomNumber3;
@@ -557,8 +544,8 @@ namespace girbox_auto
         {
             for (int i = 0; i <= 200; i++)
             {
-                
-                 randomNumber3 = random2.Next(0, 200);
+
+                randomNumber3 = random2.Next(0, 200);
                 DataPoint dp3 = new DataPoint();
                 dp3.SetValueXY(i, randomNumber3);
 
@@ -607,9 +594,13 @@ namespace girbox_auto
 
         private void button15_Click(object sender, EventArgs e)
         {
+            label25.Text = "";
+            label19.Text = "0";
+            count_data = 0;
             txtSend.Text = "start_program";
             sendData();
-            timer2.Enabled = true;
+           
+
             time_start_program = 0;
             label19.Text = "0";
             for (int i = 0; i < count_input1; i++)
@@ -625,17 +616,21 @@ namespace girbox_auto
             count_input1 = 0;
 
             start_program = 1;
-           
+            Thread.Sleep(500); txtSend.Text = "md:" + main_presure + "\n";
+            sendData();
+            Thread.Sleep(500);
+            timer1.Enabled = true;
         }
 
         private void button16_Click(object sender, EventArgs e)
         {
             txtSend.Text = "stop_program";
             start_program = 0;
+            count_data = 0;
             sendData();
             time_start_program = 0;
             label19.Text = "0";
-            timer2.Enabled = false;
+            timer1.Enabled = false;
             count = count_input2;
         }
         int time_start_program;
@@ -646,16 +641,17 @@ namespace girbox_auto
 
 
 
-            if(start_program == 1)
+            if (start_program == 1)
             {
 
             }
 
         }
 
+        //************clear current data**********
         private void button19_Click(object sender, EventArgs e)
         {
-            for(int i =0; i < count_input1; i++)
+            for (int i = 0; i < count_input1; i++)
             {
                 input1[i] = 0;
             }
@@ -666,25 +662,22 @@ namespace girbox_auto
             }
             count_input2 = 0;
             count_input1 = 0;
-           
+
         }
 
+        //*****show current result*****
         private void button17_Click(object sender, EventArgs e)
         {
             for (int i = 0; i <= count_input1; i++)
             {
                 DataPoint dp1 = new DataPoint();
-               
-                dp1.SetValueXY(i, input1[i]);             
-                chart2.Series[0].Color = Color.Red;             
-                chart2.Series[0].ChartType = SeriesChartType.StepLine;              
-                chart2.Series[0].Points.Add(dp1);
-                
-            }
-        }
 
-        private void button18_Click(object sender, EventArgs e)
-        {
+                dp1.SetValueXY(i, input1[i]);
+                chart2.Series[0].Color = Color.Red;
+                chart2.Series[0].ChartType = SeriesChartType.StepLine;
+                chart2.Series[0].Points.Add(dp1);
+            }
+
             for (int i = 0; i <= count_input2; i++)
             {
                 DataPoint dp2 = new DataPoint();
@@ -693,9 +686,14 @@ namespace girbox_auto
                 chart2.Series[1].Color = Color.Blue;
                 chart2.Series[1].ChartType = SeriesChartType.Spline;
                 chart2.Series[1].Points.Add(dp2);
-                
+
 
             }
+        }
+
+        private void button18_Click(object sender, EventArgs e)
+        {
+            
         }
 
         private void button22_Click(object sender, EventArgs e)
@@ -708,7 +706,7 @@ namespace girbox_auto
 
         }
 
-        
+
         Random random = new Random();
         int count;
         private void button20_Click(object sender, EventArgs e) // count_input1
@@ -761,7 +759,7 @@ namespace girbox_auto
                 //excelFile.Cells[row, column].Value = value;
                 excelFile.Cells[1, 1].Value = "Main valve";
                 excelFile.Cells[1, 2].Value = "Test valve";
-               
+
                 for (int i = 2; i <= count; i++)
                 {
                     excelFile.Cells[i, 1].Value = input1[i].ToString();
@@ -895,7 +893,7 @@ namespace girbox_auto
 
         private void button24_Click(object sender, EventArgs e)
         {
-            
+
         }
 
         //***********************show from open graph*******************
@@ -911,7 +909,7 @@ namespace girbox_auto
             }
         }
 
-        
+
         String[] input_1 = new string[20000];
         String[] input_2 = new string[20000];
         float[] input11 = new float[1000000];
@@ -929,20 +927,20 @@ namespace girbox_auto
 
             for (int i = 2; i < excelFile.Rows.Count; i++)
             {
-           
-                    input_1[i] = excelFile.Cells[i, 1].Value2.ToString();
 
-               
+                input_1[i] = excelFile.Cells[i, 1].Value2.ToString();
+
+
                 input11[i] = float.Parse(input_1[i]);
-              
+
             }
 
-           for (int i = 2; i < excelFile.Rows.Count; i++)
+            for (int i = 2; i < excelFile.Rows.Count; i++)
             {
-             
-                    input_2[i] = excelFile.Cells[i, 2].Value2.ToString();
-                 input22[i] = float.Parse(input_2[i]);
-               
+
+                input_2[i] = excelFile.Cells[i, 2].Value2.ToString();
+                input22[i] = float.Parse(input_2[i]);
+
             }
 
             int count_cll = excelFile.Rows.Count;
@@ -958,7 +956,7 @@ namespace girbox_auto
             //quit and release
             xlApp.Quit();
             Marshal.ReleaseComObject(xlApp);
-           
+
 
             for (int i = 2; i <= count_cll; i++)
             {
@@ -984,5 +982,102 @@ namespace girbox_auto
 
             MessageBox.Show("done");
         }
+
+        private void label24_Click(object sender, EventArgs e)
+        {
+
+        }
+
+
+
+        //********open file********
+        String[] time1 = new String[1000];
+        String[] in1 = new String[1000];
+        int count_input_cell;
+        String main_presure;
+        String main_freq;
+        String test_freq;
+        private void button26_Click(object sender, EventArgs e)
+        {
+            openFileDialog1.Title = "Open File";
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                //save selected file name
+                filePath = openFileDialog1.FileName;
+                label24.Text = filePath;
+            }
+
+            //open excel
+            Excel.Application xlApp = new Excel.Application();
+            //open workbook
+            Excel.Workbook workbook = xlApp.Workbooks.Open(filePath);
+            //open sheet
+            Excel._Worksheet sheet = workbook.Sheets[1];
+            Excel.Range excelFile = sheet.UsedRange;
+
+            count_input_cell = excelFile.Rows.Count; //tedad satrha
+
+            main_presure = excelFile.Cells[2, 2].Value2.ToString();
+            main_freq = excelFile.Cells[2, 4].Value2.ToString();
+            test_freq = excelFile.Cells[2, 5].Value2.ToString();
+
+            //*******get time********
+            for (int i = 2; i <= excelFile.Rows.Count; i++)
+            {
+                time1[i] = excelFile.Cells[i, 1].Value2.ToString();
+            }
+
+            //*******get input data********
+            for (int i = 2; i <= excelFile.Rows.Count; i++)
+            {
+                in1[i] = excelFile.Cells[i, 3].Value2.ToString();
+            }
+
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            //release com objects to fully kill excel process from running in the background
+            Marshal.ReleaseComObject(excelFile);
+            //close and release
+            workbook.Close();
+            Marshal.ReleaseComObject(workbook);
+            //quit and release
+            xlApp.Quit();
+            Marshal.ReleaseComObject(xlApp);
+
+
+            txtSend.Text = "mf:" + main_freq + "\n";
+            sendData();
+            Thread.Sleep(500);
+            txtSend.Text = "tf:" + test_freq + "\n";
+            sendData();
+            Thread.Sleep(500);
+            txtSend.Text = "md:" + "0" + "\n";
+            sendData();
+            Thread.Sleep(500);
+            txtSend.Text = "td:0" + "\n";
+            sendData();
+            Thread.Sleep(500);
+            textBox1.Text = main_freq;
+            textBox2.Text = test_freq;
+            vScrollBar1.Value = int.Parse(main_presure);
+            label8.Text = main_presure;
+            MessageBox.Show("file ready");
+
+            // label25.Text = time1[2];
+
+
+
+
+        }
+
+
+
+        private void button10_Click(object sender, EventArgs e)
+        {
+        }
+
+
+
+        //*******************END************************
     }
 }

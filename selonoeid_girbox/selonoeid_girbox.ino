@@ -76,7 +76,7 @@ void loop() {
   sensor_read();
   motor_control();
   test_();
-  start_program();
+  //start_program();
   //Serial.println(second);
 }
 

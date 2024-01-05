@@ -1,0 +1,19 @@
+E:\MyProjects\Learning\C#\Read Excel\Read Excel\bin\Debug\Read Excel.exe.config
+E:\MyProjects\Learning\C#\Read Excel\Read Excel\bin\Debug\Read Excel.exe
+E:\MyProjects\Learning\C#\Read Excel\Read Excel\bin\Debug\Read Excel.pdb
+E:\MyProjects\Learning\C#\Read Excel\Read Excel\obj\Debug\Read Excel.csprojResolveAssemblyReference.cache
+E:\MyProjects\Learning\C#\Read Excel\Read Excel\obj\Debug\Read Excel.csproj.ResolveComReference.cache
+E:\MyProjects\Learning\C#\Read Excel\Read Excel\obj\Debug\Read_Excel.Form1.resources
+E:\MyProjects\Learning\C#\Read Excel\Read Excel\obj\Debug\Read_Excel.Properties.Resources.resources
+E:\MyProjects\Learning\C#\Read Excel\Read Excel\obj\Debug\Read Excel.csproj.GenerateResource.Cache
+E:\MyProjects\Learning\C#\Read Excel\Read Excel\obj\Debug\Read Excel.exe
+E:\MyProjects\Learning\C#\Read Excel\Read Excel\obj\Debug\Read Excel.pdb
+C:\Users\Mohammad\Desktop\Read Excel\Read Excel\obj\Debug\Read Excel.csproj.AssemblyReference.cache
+C:\Users\Mohammad\Desktop\Read Excel\Read Excel\obj\Debug\Read Excel.csproj.SuggestedBindingRedirects.cache
+C:\Users\Mohammad\Desktop\Read Excel\Read Excel\obj\Debug\Read Excel.csproj.ResolveComReference.cache
+C:\Users\Mohammad\Desktop\Read Excel\Read Excel\obj\Debug\Read_Excel.Form1.resources
+C:\Users\Mohammad\Desktop\Read Excel\Read Excel\obj\Debug\Read_Excel.Properties.Resources.resources
+C:\Users\Mohammad\Desktop\Read Excel\Read Excel\obj\Debug\Read Excel.csproj.GenerateResource.cache
+C:\Users\Mohammad\Desktop\Read Excel\Read Excel\obj\Debug\Read Excel.csproj.CoreCompileInputs.cache
+C:\Users\Mohammad\Desktop\Read Excel\Read Excel\obj\Debug\Read Excel.exe
+C:\Users\Mohammad\Desktop\Read Excel\Read Excel\obj\Debug\Read Excel.pdb
